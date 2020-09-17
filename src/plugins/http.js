@@ -7,7 +7,7 @@ MyHttpServer.install = function(Vue) {
   //添加请求拦截器
   axios.interceptors.request.use(
     config => {
-      console.log(config)
+      // console.log(config)
       config.headers.Authorization = sessionStorage.getItem('token')
       return config
     },

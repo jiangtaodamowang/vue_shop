@@ -1,11 +1,7 @@
 <template>
   <div>
     <!--1.面包屑-->
-    <el-breadcrumb separator-class="el-icon-arrow-right">
-      <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-      <el-breadcrumb-item>用户管理</el-breadcrumb-item>
-      <el-breadcrumb-item>用户列表</el-breadcrumb-item>
-    </el-breadcrumb>
+    <my-bread level1="用户管理" level2="用户管理"></my-bread>
     <el-card class="card">
       <!--2.输入框-->
       <el-input
@@ -87,7 +83,7 @@
                 icon="el-icon-delete"
                 circle
                 size="mini"
-                @click="showDeleteDialog()"
+                @click="showDeleteDialog(scope.row.id)"
               ></el-button>
             </el-tooltip>
             <el-tooltip
@@ -103,6 +99,7 @@
                 icon="el-icon-check"
                 circle
                 size="mini"
+                @click="showSetUserRoleDialog(scope.row)"
               ></el-button>
             </el-tooltip>
           </template>
@@ -189,6 +186,33 @@
         >
       </div>
     </el-dialog>
+    <!--5.3.分配角色的对话框 -->
+    <el-dialog title="分配角色" :visible.sync="dialogSetRoleVisible">
+      <el-form :model="ruleForm">
+        <el-form-item label="用户名" :label-width="formLabelWidth">
+          {{ userInfo.username }}
+        </el-form-item>
+        <el-form-item label="角色名" :label-width="formLabelWidth">
+          {{ userInfo.role_name }}
+        </el-form-item>
+        <el-form-item label="分配新角色" :label-width="formLabelWidth">
+          <!-- 如果el-select绑定的数据值和options的value一样，就会显示option的lable值 -->
+          <el-select v-model="selectRoleId" placeholder="请选择">
+            <el-option disabled label="请选择" :value="-1"></el-option>
+            <el-option
+              :label="item.roleName"
+              :value="item.id"
+              v-for="(item, index) in rolesList"
+              :key="index"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogSetRoleVisible= false">取 消</el-button>
+        <el-button type="primary" @click="saveRoleInfo()">确 定</el-button>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -217,13 +241,20 @@ export default {
       query: '',
       pagenum: 1,
       pagesize: 2,
-      input: '',
       total: 0,
       userListData: [],
+      //保存所有角色数据列表
+      rolesList: [],
+      //需要被分配的角色用户信息
+      userInfo: {},
       //添加用户对话框
       dialogFormVisibleAdd: false,
       //修改用户对话框
       dialogFormVisibleEdit: false,
+      //分配角色对话框
+      dialogSetRoleVisible: false,
+      currUserName: '',
+      selectRoleId: -1,
       ruleForm: {
         username: '',
         password: '',
@@ -265,7 +296,7 @@ export default {
           { validator: checkEmail, trigger: 'blur' }
         ]
       },
-      formLabelWidth: '70px'
+      formLabelWidth: '90px'
     }
   },
   created() {
@@ -280,11 +311,12 @@ export default {
       this.pagesize = val
       this.getUserListData()
     },
+    //获取用户列表数据
     async getUserListData() {
       const { data: res } = await this.$http.get(
         `users?query=${this.query}&pagenum=${this.pagenum}&pagesize=${this.pagesize}`
       )
-      console.log(res)
+      // console.log(res)
       if (res.meta.status !== 200)
         return this.$message.error('获取列表数据失败')
       this.userListData = res.data.users
@@ -334,6 +366,7 @@ export default {
         this.dialogFormVisibleAdd = false
       })
     },
+    //编辑按钮
     async showEditDialog(id) {
       console.log(id)
       this.dialogFormVisibleEdit = true
@@ -357,33 +390,77 @@ export default {
           { email: this.editForm.email, mobile: this.editForm.mobile }
         )
         console.log(res)
-        if(res.meta.status !==200 ) {
-            return this.$message.error(res.meta.msg)
+        if (res.meta.status !== 200) {
+          return this.$message.error(res.meta.msg)
         }
         //关闭对话框
         this.dialogFormVisibleEdit = false
         //提示
         this.$message.success(res.meta.msg)
         //重新获取列表数据
-        this,this.getUserListData()
+        this.getUserListData()
       })
     },
-    showDeleteDialog() {
-         this.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
-          confirmButtonText: '确定',
-          cancelButtonText: '取消',
-          type: 'warning'
-        }).then(() => {
+    //删除用户角色
+    showDeleteDialog(id) {
+      this.$confirm('删除文件?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      })
+        .then(async () => {
+          //发送一个删除的请求:id 用户id
+          const { data: res } = await this.$http.delete('users/' + id)
+          console.log(res)
+          if (res.meta.status !== 200) {
+            return this.$message.error(res.meta.msg)
+          }
+          ////提示
+          this.$message.success(res.meta.msg)
+          //重新获取列表数据
+          this, this.getUserListData()
           this.$message({
             type: 'success',
             message: '删除成功!'
-          });
-        }).catch(() => {
+          })
+        })
+        .catch(() => {
           this.$message({
             type: 'info',
             message: '已取消删除'
-          });          
-        });
+          })
+        })
+    },
+    //分配用户角色
+    async showSetUserRoleDialog(userInfo) {
+      this.userInfo = userInfo
+      this.dialogSetRoleVisible = true
+      console.log(userInfo);
+       //获取角色列表
+      const { data: res1 } = await this.$http.get(`roles`)
+      console.log(res1)
+      this.rolesList = res1.data
+    },
+    //分配用户角色对话框确定按钮
+    async saveRoleInfo() {
+      if(!this.selectRoleId) {
+        return this.$message.error('请选择要分配的角色')
+      }
+
+      const { data: res } = await this.$http.put(
+        `users/${this.userInfo.id}/role`,
+        {
+          rid: this.selectRoleId
+        }
+      )
+      console.log(res)
+      if(res.meta.status !== 200) {
+        return this.$message.error(res.meta.msg),
+        this.dialogSetRoleVisible = false
+      }
+      this.$message.success(res.meta.msg)
+      this.getUserListData()
+      this.dialogSetRoleVisible = false
     }
   }
 }

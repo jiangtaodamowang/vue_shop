@@ -19,42 +19,42 @@ const routes = [
     component: () => import('../views/home/home'),
     children: [
       {
-        path: '/user',
-        name: 'user',
+        path: '/users',
+        name: 'users',
         component: () => import('../components/user/user')
       },
       {
-        path: '/roleList',
+        path: '/roles',
         name: 'roleList',
         component: () => import('../components/roleList/roleList')
       },
       {
-        path: '/authorityList',
+        path: '/rights',
         name: 'authorityList',
         component: () => import('../components/authorityList/authorityList')
       },
       {
-        path: '/goodsList',
+        path: '/goods',
         name: 'goodsList',
         component: () => import('../components/goodsList/goodsList')
       },
       {
-        path: '/classParams',
+        path: '/params',
         name: 'classParams',
         component: () => import('../components/classParams/classParams')
       },
       {
-        path: '/goodsClass',
+        path: '/categories',
         name: 'goodsClass',
         component: () => import('../components/goodsClass/goodsClass')
       },
       {
-        path: '/orderList',
+        path: '/orders',
         name: 'orderList',
         component: () => import('../components/orderList/orderList')
       },
       {
-        path: '/chart',
+        path: '/reports',
         name: 'chart',
         component: () => import('../components/chart/chart')
       }

@@ -209,7 +209,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogSetRoleVisible= false">取 消</el-button>
+        <el-button @click="dialogSetRoleVisible = false">取 消</el-button>
         <el-button type="primary" @click="saveRoleInfo()">确 定</el-button>
       </div>
     </el-dialog>
@@ -436,15 +436,15 @@ export default {
     async showSetUserRoleDialog(userInfo) {
       this.userInfo = userInfo
       this.dialogSetRoleVisible = true
-      console.log(userInfo);
-       //获取角色列表
+      console.log(userInfo)
+      //获取角色列表
       const { data: res1 } = await this.$http.get(`roles`)
       console.log(res1)
       this.rolesList = res1.data
     },
     //分配用户角色对话框确定按钮
     async saveRoleInfo() {
-      if(!this.selectRoleId) {
+      if (!this.selectRoleId) {
         return this.$message.error('请选择要分配的角色')
       }
 
@@ -455,9 +455,10 @@ export default {
         }
       )
       console.log(res)
-      if(res.meta.status !== 200) {
-        return this.$message.error(res.meta.msg),
-        this.dialogSetRoleVisible = false
+      if (res.meta.status !== 200) {
+        return (
+          this.$message.error(res.meta.msg), (this.dialogSetRoleVisible = false)
+        )
       }
       this.$message.success(res.meta.msg)
       this.getUserListData()

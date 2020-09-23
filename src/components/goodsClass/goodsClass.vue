@@ -322,9 +322,7 @@ export default {
           })
         })
     },
-    showEditDialog() {
-
-    }
+    showEditDialog() {}
   }
 }
 </script>

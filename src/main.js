@@ -29,6 +29,10 @@ import 'quill/dist/quill.bubble.css'
 //  注册富文本编辑器为全局引用
 Vue.use(VueQuillEditor /* { default global options } */)
 
+// 引入Echarts 图表 
+import echarts from 'echarts'
+Vue.prototype.$echarts = echarts
+
 new Vue({
   router,
   store,
